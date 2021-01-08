@@ -7,10 +7,19 @@ var ground, groundImg;
 
 var score=0;
 var count=0;
+var police1Count=0;
 
 var life1, life2, life3, life4, life5;
 var carGroup;
 var coinGroup;
+var spaceCount=0;
+var PLAY=0;
+var END=1;
+var gameState = PLAY;
+
+var blockGroup, barricade;
+var boomSound,coinSound,whooshSound;
+
 function preload()
 {
     lucasImg = loadImage("images/lucas.png");
@@ -31,6 +40,11 @@ function preload()
     life4 = loadImage("images/heart4.png");
     life5 = loadImage("images/heart5.png");
 
+    barricade = loadImage("images/blockade.png")
+    gameOver = loadImage("images/gameOver.png");
+    boomSound= loadSound("sounds/boom.wav");
+    coinSound= loadSound("sounds/coin.wav");
+    whooshSound=loadSound("sounds/whoosh.wav");;
   }
 
 function setup()
@@ -66,66 +80,121 @@ function setup()
    
     carGroup = createGroup();
     coinGroup=createGroup();
+    blockGroup = createGroup();
 }
 
 
 function draw()
 {
+  
+
     background("white");
    
-    if (back.y > 1000)
+    if(gameState=== PLAY)
     {
-      back.y = back.height/2;
-    }
-   
-    
-     myCarControls();
-   
-     policeControl();
 
-     spawnTraffic();
-
-     spawnCoin();
-     
-     for (var i = 0; i < carGroup.length; i++) 
-     {
-      if (carGroup.get(i).isTouching(lucas)) 
+      if(keyDown("space"))
       {
-        count = count+1;
-        console.log(count);
-        carGroup.get(i).destroy();
-
-        switch(count)
-        {
-          case 1: life.addImage(life2);
-          break;
-          case 2: life.addImage(life3);
-          break;
-          case 3: life.addImage(life4);
-          break;
-          case 4: life.addImage(life5);
-          break;
-          default:break;
-
-        }
-
+        spaceCount=spaceCount+1;
+        score = score-100;
+        whooshSound.play()
        
       }
-    }
-     
+      else if(keyDown(LEFT_ARROW) || keyDown(UP_ARROW) || keyDown(UP_ARROW) || keyDown(DOWN_ARROW))
+      {
+        spaceCount=0;
+      }
+      if (back.y > 1000)
+      {
+        back.y = back.height/2;
+      }
+      myCarControls();
+   
+      policeControl();
+ 
+      spawnTraffic();
+      
+      spawnCoin();
+      
+      spawnBarricade();
+      
+      console.log("in spaceCount:"+spaceCount)
+      if(spaceCount===0)
+      {
+        
+        for (var i = 0; i < carGroup.length; i++) 
+        {
+          if (carGroup.get(i).isTouching(lucas)) 
+          {
+            count = count+1;
+            carGroup.get(i).destroy();
+              //playSound("sound://category_digital/win.mp3", false);
+              /*carGroup.get(i).addImage(boomImg);
+              carGroup.get(i).velocityY = +7;
+              carGroup.get(i).rotationSpeed = 3;
+              carGroup.get(i).rotation = -30;
+              carGroup.get(i).velocityX = -3;*/
+
+            switch(count)
+            {
+              case 1: life.addImage(life2);
+              break;
+              case 2: life.addImage(life3);
+              break;
+              case 3: life.addImage(life4);
+              break;
+              case 4: life.addImage(life5);
+              break;
+              default:break;
+
+            }
+          }
+        }
+      }
+   
       for (var i = 0; i < coinGroup.length; i++) 
       {
         if (coinGroup.get(i).isTouching(lucas)) 
         {
           coinGroup.get(i).destroy();
-          //Add sound collecting sound
+          coinSound.play();
           score=score+10;
         }
      
        }
-  
 
-     drawSprites();
+       for (var i = 0; i < blockGroup.length; i++) 
+      {
+        if (blockGroup.get(i).isTouching(lucas)) 
+        {
+          boomSound.play();
+          gameState = END;
+        }
+     
+       }
+      
+  
+       if(count === 4)
+       {
+          gameState=END;
+       }
+
+
+
+    }
+    if(gameState===END)
+    {
+
+      var screen = createSprite(windowWidth/2, windowHeight/2,windowWidth,windowHeight)
+      screen.scale=2;
+      screen.addImage(gameOver);
+      carGroup.setLifetimeEach(-1)
+
+    }
+   
+     
+     
+            drawSprites();
 
      textSize(20);
      fill("black");
@@ -151,6 +220,10 @@ function draw()
       {
         lucas.y = lucas.y +8;
       }
+      if (keyDown(UP_ARROW))
+      {
+        lucas.y = lucas.y -8;
+      }
   }
 
   function policeControl()
@@ -160,18 +233,33 @@ function draw()
     police2.velocityY = -random(0.4,1);
     police3.velocityY = -random(0.4,1);
 
-   
-
-    //green back
-    if ((lucas.isTouching(police1))){
+    /*if ((lucas.isTouching(police1)) ){
       //playSound("sound://category_digital/win.mp3", false);
       police1.addImage(boomImg);
       police1.velocityY = +7;
-      police1.rotationSpeed = 3;
+      police1.rotationSpeed = 3;w
       police1.rotation = -30;
       police1.velocityX = -3;
+     // police1Count=police1Count+1;
+      }
+
+    if ((lucas.isTouching(police2))){
+      //playSound("sound://category_digital/win.mp3", false);
+      police2.addImage(boomImg);
+      police2.velocityY = +7;
+      police2.rotationSpeed = 3;
+      police2.rotation = -30;
+      police2.velocityX = -3;
     }
     
+    if ((lucas.isTouching(police3))){
+      //playSound("sound://category_digital/win.mp3", false);
+      police3.addImage(boomImg);
+      police3.velocityY = +7;
+      police3.rotationSpeed = -3;
+      police3.rotation = -30;
+      police3.velocityX = -3;
+    }*/
     for(var i=0; i<copCars.length;i++)
     {
       if(copCars[i].y- lucas.y < 10)
@@ -212,18 +300,37 @@ function spawnCoin()
 {
    
         //write code here to spawn the clouds
-        if (frameCount % 40 === 0) 
+        if (frameCount % 20 === 0) 
         {
           var reward = createSprite(Math.round(random(windowWidth/2-200,windowWidth/2+300)),Math.round(random(-50,-200)));
           reward.addAnimation("rewardCoin", coinImg);
            reward.scale = 0.9;
-           reward.velocityY=+2
+           reward.velocityY=+2;
          
          
           
           //add each cloud to the group
           coinGroup.add(reward);
         }
-        
-      
+}
+
+function spawnBarricade()
+{
+   
+        //write code here to spawn the clouds
+        if (frameCount % 100 === 0) 
+        {
+          var block = createSprite(Math.round(random(windowWidth/2-200,windowWidth/2+300)),Math.round(random(-50,-200)));
+          block.addImage(barricade)
+           block.scale = 0.3;
+           block.velocityY=+2;
+         
+         
+          
+          //add each cloud to the group
+          blockGroup.add(block);
+
+          block.debug = true;
+          block.setCollider("rectangle", 0, 0, 10,10);
+        }
 }
