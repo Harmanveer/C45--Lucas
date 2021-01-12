@@ -13,12 +13,14 @@ var life1, life2, life3, life4, life5;
 var carGroup;
 var coinGroup;
 var spaceCount=0;
-var PLAY=0;
-var END=1;
-var gameState = PLAY;
+var PLAY=1;
+var END=0;
+var gameState="serve" ;
 
 var blockGroup, barricade;
 var boomSound,coinSound,whooshSound;
+
+var startSprite
 
 function preload()
 {
@@ -44,16 +46,26 @@ function preload()
     gameOver = loadImage("images/gameOver.png");
     boomSound= loadSound("sounds/boom.wav");
     coinSound= loadSound("sounds/coin.wav");
-    whooshSound=loadSound("sounds/whoosh.wav");;
+    whooshSound=loadSound("sounds/whoosh.wav");
+
+    gem1Img = loadImage("images/gem1.png");
+    gem2Img = loadImage("images/gem2.png");
+    gem3Img = loadImage("images/gem3.png");
+    cashImg = loadImage("images/cash.png");
+
+    startImg = loadImage("images/start.png");
   }
 
 function setup()
 {
+  
     createCanvas(windowWidth,windowHeight);
     back = createSprite(windowWidth/2, windowHeight/2, 1000,500);
     back.addImage(track);
     back.scale = 2;
     back.velocityY = 5;
+    
+    startSprite = createSprite(windowWidth/2, windowHeight/2, windowWidth, windowHeight);
 
     lucas = createSprite(windowWidth/2, windowHeight/2-100,20,50);
     lucas.addImage("lucas",lucasImg);
@@ -76,11 +88,11 @@ function setup()
     life.scale=0.2;
 
     copCars = [police1, police2, police3];
-    //coin
-   
+
     carGroup = createGroup();
     coinGroup=createGroup();
     blockGroup = createGroup();
+    gemGroup = createGroup();
 }
 
 
@@ -89,21 +101,39 @@ function draw()
   
 
     background("white");
-   
-    if(gameState=== PLAY)
-    {
+    
+    startSprite.addImage(startImg);
+    startSprite.visible=false;
+     if(gameState==="serve")
+     {
+          console.log("in beginning: "+gameState);  
+         startSprite.visible=true;
+          back.visible=false;
+          lucas.visible=false;
+          police1.visible-false;
+          police2.visible=false;
+          police3.visible=false;
+          life.visible=false;
+          if(mousePressedOver(startSprite))
+          {
+            
+            gameState= "play";
+            console.log("mousePressedOver: "+gameState);
+           
 
-      if(keyDown("space"))
-      {
-        spaceCount=spaceCount+1;
-        score = score-100;
-        whooshSound.play()
-       
-      }
-      else if(keyDown(LEFT_ARROW) || keyDown(UP_ARROW) || keyDown(UP_ARROW) || keyDown(DOWN_ARROW))
-      {
-        spaceCount=0;
-      }
+          }
+    }
+    else if(gameState === "play")
+    {
+      console.log("mousePressedOver: "+gameState);
+      startSprite.visible=false;
+      back.visible=true;
+      lucas.visible=true;
+      police1.visible-true;
+      police2.visible=true;
+      police3.visible=true;
+      life.visible=true;
+      
       if (back.y > 1000)
       {
         back.y = back.height/2;
@@ -117,10 +147,10 @@ function draw()
       spawnCoin();
       
       spawnBarricade();
+
+      spawnGems();
       
-      console.log("in spaceCount:"+spaceCount)
-      if(spaceCount===0)
-      {
+     
         
         for (var i = 0; i < carGroup.length; i++) 
         {
@@ -128,12 +158,6 @@ function draw()
           {
             count = count+1;
             carGroup.get(i).destroy();
-              //playSound("sound://category_digital/win.mp3", false);
-              /*carGroup.get(i).addImage(boomImg);
-              carGroup.get(i).velocityY = +7;
-              carGroup.get(i).rotationSpeed = 3;
-              carGroup.get(i).rotation = -30;
-              carGroup.get(i).velocityX = -3;*/
 
             switch(count)
             {
@@ -150,7 +174,7 @@ function draw()
             }
           }
         }
-      }
+      
    
       for (var i = 0; i < coinGroup.length; i++) 
       {
@@ -161,28 +185,40 @@ function draw()
           score=score+10;
         }
      
-       }
+      }
 
        for (var i = 0; i < blockGroup.length; i++) 
       {
         if (blockGroup.get(i).isTouching(lucas)) 
         {
           boomSound.play();
-          gameState = END;
+          gameState = "end";
         }
      
-       }
+      }
+
+      for (var i = 0; i < gemGroup.length; i++) 
+      {
+        if (gemGroup.get(i).isTouching(lucas)) 
+        {
+          gemGroup.get(i).destroy();
+          coinSound.play();
+          score=score+20;
+        }
+     
+      }
       
   
        if(count === 4)
        {
-          gameState=END;
+          boomSound.play();
+          gameState="end";
        }
 
 
 
     }
-    if(gameState===END)
+    else if(gameState==="end")
     {
 
       var screen = createSprite(windowWidth/2, windowHeight/2,windowWidth,windowHeight)
@@ -199,10 +235,7 @@ function draw()
      textSize(20);
      fill("black");
      text("SCORE: " +score, 15, 20);
-    // text("LIVE: " +live, 15, 50 );
-    // text("PLACE: " + place, 280, 20 );
      textSize(40);
-     //text(speed, 320, 360 );
   }
 
   function myCarControls()
@@ -233,33 +266,6 @@ function draw()
     police2.velocityY = -random(0.4,1);
     police3.velocityY = -random(0.4,1);
 
-    /*if ((lucas.isTouching(police1)) ){
-      //playSound("sound://category_digital/win.mp3", false);
-      police1.addImage(boomImg);
-      police1.velocityY = +7;
-      police1.rotationSpeed = 3;w
-      police1.rotation = -30;
-      police1.velocityX = -3;
-     // police1Count=police1Count+1;
-      }
-
-    if ((lucas.isTouching(police2))){
-      //playSound("sound://category_digital/win.mp3", false);
-      police2.addImage(boomImg);
-      police2.velocityY = +7;
-      police2.rotationSpeed = 3;
-      police2.rotation = -30;
-      police2.velocityX = -3;
-    }
-    
-    if ((lucas.isTouching(police3))){
-      //playSound("sound://category_digital/win.mp3", false);
-      police3.addImage(boomImg);
-      police3.velocityY = +7;
-      police3.rotationSpeed = -3;
-      police3.rotation = -30;
-      police3.velocityX = -3;
-    }*/
     for(var i=0; i<copCars.length;i++)
     {
       if(copCars[i].y- lucas.y < 10)
@@ -271,7 +277,7 @@ function draw()
   }
   function spawnTraffic()
   {
-    if(frameCount % 60 === 0)
+    if(frameCount % 80 === 0)
     {
       var vehicle = createSprite(Math.round(random(windowWidth/2-200,windowWidth/2+300)),Math.round(random(-50,-200)));
       vehicle.velocityY = Math.round(random(5,8));
@@ -299,8 +305,7 @@ function draw()
 function spawnCoin()
 {
    
-        //write code here to spawn the clouds
-        if (frameCount % 20 === 0) 
+        if (frameCount % 50 === 0) 
         {
           var reward = createSprite(Math.round(random(windowWidth/2-200,windowWidth/2+300)),Math.round(random(-50,-200)));
           reward.addAnimation("rewardCoin", coinImg);
@@ -309,7 +314,6 @@ function spawnCoin()
          
          
           
-          //add each cloud to the group
           coinGroup.add(reward);
         }
 }
@@ -317,8 +321,7 @@ function spawnCoin()
 function spawnBarricade()
 {
    
-        //write code here to spawn the clouds
-        if (frameCount % 100 === 0) 
+        if (frameCount % 200 === 0) 
         {
           var block = createSprite(Math.round(random(windowWidth/2-200,windowWidth/2+300)),Math.round(random(-50,-200)));
           block.addImage(barricade)
@@ -327,10 +330,35 @@ function spawnBarricade()
          
          
           
-          //add each cloud to the group
           blockGroup.add(block);
 
           block.debug = true;
           block.setCollider("rectangle", 0, 0, 10,10);
         }
+}
+
+function spawnGems()
+{
+  if (frameCount % 100 === 0) 
+        {
+          var gems = createSprite(Math.round(random(windowWidth/2-200,windowWidth/2+300)),Math.round(random(-50,-200)));
+          var rand = Math.round(random(1,3))
+          switch(rand)
+          {
+            case 1: gems.addImage(gem1Img);
+            break;
+            case 2: gems.addImage(gem2Img);
+            break;
+            case 3: gems.addImage(gem3Img);
+            break;
+            default:
+              break;
+          }
+          gems.scale = 0.7;
+          gems.velocityY=+2;
+         
+         
+          
+          gemGroup.add(gems);
+        } 
 }
