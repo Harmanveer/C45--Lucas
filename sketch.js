@@ -20,7 +20,7 @@ var gameState="serve" ;
 var blockGroup, barricade;
 var boomSound,coinSound,whooshSound;
 
-var startSprite
+var startSprite, rules;
 
 function preload()
 {
@@ -54,6 +54,8 @@ function preload()
     cashImg = loadImage("images/cash.png");
 
     startImg = loadImage("images/start.png");
+
+    rulesImg = loadImage("images/rules.png");
   }
 
 function setup()
@@ -65,7 +67,12 @@ function setup()
     back.scale = 2;
     back.velocityY = 5;
     
-    startSprite = createSprite(windowWidth/2, windowHeight/2, windowWidth, windowHeight);
+    rules = createSprite(windowWidth/2, windowHeight/2, windowWidth, windowHeight);
+
+    startSprite = createSprite(windowWidth/2+500, windowHeight/2+200, windowWidth, windowHeight);
+
+    
+
 
     lucas = createSprite(windowWidth/2, windowHeight/2-100,20,50);
     lucas.addImage("lucas",lucasImg);
@@ -102,12 +109,17 @@ function draw()
 
     background("white");
     
+    rules.addImage(rulesImg);
     startSprite.addImage(startImg);
+    rules.visible=false;
     startSprite.visible=false;
+    
      if(gameState==="serve")
      {
           console.log("in beginning: "+gameState);  
-         startSprite.visible=true;
+          rules.visible=true;
+          startSprite.visible=true;
+         
           back.visible=false;
           lucas.visible=false;
           police1.visible-false;
@@ -126,7 +138,9 @@ function draw()
     else if(gameState === "play")
     {
       console.log("mousePressedOver: "+gameState);
+      rules.visible=false;
       startSprite.visible=false;
+      
       back.visible=true;
       lucas.visible=true;
       police1.visible-true;
