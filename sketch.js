@@ -118,6 +118,7 @@ function draw()
      {
           console.log("in beginning: "+gameState);  
           rules.visible=true;
+          rules.scale=1.5;
           startSprite.visible=true;
          
           back.visible=false;
@@ -236,15 +237,25 @@ function draw()
     {
 
       var screen = createSprite(windowWidth/2, windowHeight/2,windowWidth,windowHeight)
-      screen.scale=2;
       screen.addImage(gameOver);
       carGroup.setLifetimeEach(-1)
+
+      back.visible=false;
+      lucas.visible=false;
+      police1.visible=false;
+      police2.visible=false;
+      police3.visible=false;
+      life.visible=false;
+      carGroup.destroyEach();
+      gemGroup.destroyEach();
+      blockGroup.destroyEach();
+      coinGroup.destroyEach();
 
     }
    
      
      
-            drawSprites();
+     drawSprites();
 
      textSize(20);
      fill("black");
